@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b7285"><link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="style.css"><title>AWPL Outward</title></head>
+<body><main class="app"><section class="card">
+<div class="brand">AWPL</div><h1>Outward Number</h1>
+<p class="sub">Get the official outward number before sending your document.</p>
+<label>Employee</label>
+<select id="employee"><option value="">Select employee</option><option>Niraj</option><option>Amit</option><option>Rahul</option><option>Other</option></select>
+<label>Purpose / Type</label>
+<select id="purpose"><option value="">Select type</option><option>Official Letter</option><option>Proposal</option><option>Quotation</option><option>Application</option><option>Tender</option><option>Other</option></select>
+<button id="getBtn">GET OUTWARD NUMBER</button>
+<div id="result" class="result hidden"><div class="small">Your outward number</div><div id="outwardNo" class="number"></div><button id="copyBtn" class="secondary">COPY NUMBER</button><div id="status" class="status"></div></div>
+<div id="error" class="error hidden"></div>
+</section><footer>AWPL Outward Register</footer></main>
+<script>
+const API_URL="https://script.google.com/macros/s/AKfycbzo8gaOs6XSubEEdFSn140B9JHeOoKgbuTvk7De0lCVpxPar2nsRm8tZLUkQ48-Oo3G/exec";
+const $=id=>document.getElementById(id);
+function error(m){$("error").textContent=m;$("error").classList.remove("hidden");$("result").classList.add("hidden")}
+$("getBtn").onclick=async()=>{
+$("error").classList.add("hidden");
+if(!$("employee").value)return error("Please select your name.");
+if(!$("purpose").value)return error("Please select the outward type.");
+if(API_URL.includes("PASTE_YOUR"))return error("Administrator has not connected the outward system yet.");
+$("getBtn").disabled=true;$("getBtn").textContent="GENERATING...";
+try{
+const id=crypto.randomUUID();
+const u=API_URL+"?action=issue&employee="+encodeURIComponent($("employee").value)+"&purpose="+encodeURIComponent($("purpose").value)+"&requestId="+encodeURIComponent(id);
+const r=await fetch(u,{cache:"no-store"});const d=await r.json();if(!d.ok)throw Error(d.error);
+$("outwardNo").textContent=d.outwardNo;$("status").textContent="Issued just now";$("result").classList.remove("hidden");
+}catch(e){error("Could not generate the number. Please try again.")}
+finally{$("getBtn").disabled=false;$("getBtn").textContent="GET OUTWARD NUMBER"}
+};
+$("copyBtn").onclick=async()=>{await navigator.clipboard.writeText($("outwardNo").textContent);$("status").textContent="Copied to clipboard."};
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script></body></html>
